@@ -1,0 +1,5 @@
+{
+  "name": "AI Travel Planner Dashboard",
+  "description": "A high-fidelity AI-powered travel itinerary planner with interactive timeline, weather widgets, and budget tracking.",
+  "requestFramePermissions": ["geolocation"]
+}
