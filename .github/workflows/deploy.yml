@@ -29,8 +29,8 @@ jobs:
         run: npm run build
         env:
           # 這裡會從 GitHub Secrets 讀取您設定的金鑰並注入編譯環境
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-
+          VITE_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
