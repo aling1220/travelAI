@@ -2,7 +2,8 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"] # 如果您的主分支名稱是 master，請改為 master
+    branches: ["main"] # 如果您的主分支是 master，請改為 master
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -28,15 +29,18 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # 這裡會從 GitHub Secrets 讀取您設定的金鑰並注入編譯環境
+          # 這裡非常重要！Vite 規定必須以 VITE_ 開頭才會打包進前端
+          # 左邊是程式碼讀取的變數名，右邊是您在 GitHub Secrets 設定的名稱
           VITE_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          # Vite 預設編譯輸出的資料夾是 dist
           path: './dist'
 
   deploy:
