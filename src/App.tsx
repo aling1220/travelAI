@@ -52,6 +52,7 @@ export default function App() {
   const [inputMessage, setInputMessage] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [activeTransportInfo, setActiveTransportInfo] = useState<number | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -135,17 +136,49 @@ ${plan.weather_forecast.map((w, i) => `第 ${i+1} 天：${w.temp} (${w.condition
   }, []);
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
+    <div className="flex flex-col lg:flex-row h-screen bg-[#F8FAFC] overflow-hidden font-sans">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white border-b border-slate-200 p-4 flex items-center justify-between z-20">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white shadow-md">
+            <Compass size={18} />
+          </div>
+          <h1 className="text-lg font-display font-bold tracking-tight">TravelAI</h1>
+        </div>
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 bg-slate-100 rounded-lg text-slate-600"
+        >
+          {isSidebarOpen ? <X size={20} /> : <Search size={20} />}
+        </button>
+      </div>
+
+      {/* Sidebar Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-20"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <aside className="w-80 bg-white border-r border-slate-200 p-6 flex flex-col gap-8 z-10">
-        <div className="flex items-center gap-3">
+      <aside className={cn(
+        "fixed inset-y-0 left-0 lg:relative lg:inset-auto z-30 lg:z-10 w-[280px] sm:w-80 bg-white border-r border-slate-200 p-6 flex flex-col gap-6 transition-transform duration-300 transform lg:translate-x-0",
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}>
+        <div className="hidden lg:flex items-center gap-3">
           <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-orange-200">
             <Compass size={24} />
           </div>
           <h1 className="text-xl font-display font-bold tracking-tight">TravelAI</h1>
         </div>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar">
           <div className="space-y-2">
             <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">目的地</label>
             <div className="relative">
@@ -218,7 +251,10 @@ ${plan.weather_forecast.map((w, i) => `第 ${i+1} 天：${w.temp} (${w.condition
           </div>
 
           <button 
-            onClick={handleGenerate}
+            onClick={() => {
+              handleGenerate();
+              setIsSidebarOpen(false);
+            }}
             disabled={loading}
             className="w-full py-3 bg-slate-900 text-white rounded-xl font-semibold hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
           >
@@ -242,29 +278,29 @@ ${plan.weather_forecast.map((w, i) => `第 ${i+1} 天：${w.temp} (${w.condition
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-8 relative">
-        <div className="max-w-5xl mx-auto space-y-8">
+      <main className="flex-1 overflow-y-auto p-4 lg:p-8 relative">
+        <div className="max-w-5xl mx-auto space-y-6 lg:space-y-8">
           {/* Header */}
-          <header className="flex items-end justify-between">
+          <header className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-orange-500 font-semibold text-sm mb-1">
                 <Navigation size={14} />
                 <span>您的專屬旅程</span>
               </div>
-              <h2 className="text-4xl font-display font-bold text-slate-900">
+              <h2 className="text-2xl lg:text-4xl font-display font-bold text-slate-900">
                 {plan?.destination || destination}
               </h2>
             </div>
-            <div className="flex gap-3">
+            <div className="flex w-full sm:w-auto gap-2 sm:gap-3">
               <button 
                 onClick={downloadItinerary}
                 disabled={!plan}
-                className="px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center gap-2 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                className="flex-1 sm:flex-none px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center gap-2 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
                 <Download size={18} />
-                <span className="font-semibold text-sm">下載行程</span>
+                <span className="font-semibold text-sm">下載</span>
               </button>
-              <div className="px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
+              <div className="flex-1 sm:flex-none px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center gap-2">
                 <DollarSign size={18} className="text-emerald-500" />
                 <span className="font-semibold text-slate-700">{plan?.total_budget || '--'}</span>
               </div>
@@ -449,7 +485,7 @@ ${plan.weather_forecast.map((w, i) => `第 ${i+1} 天：${w.temp} (${w.condition
                       loading="lazy"
                       allowFullScreen
                       referrerPolicy="no-referrer-when-downgrade"
-                      src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY_HERE'}&q=${encodeURIComponent(selectedLocation + ' ' + (plan?.destination || destination))}`}
+                      src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY_HERE'}&q=${encodeURIComponent(selectedLocation + ' ' + (plan?.destination || destination))}`}
                     ></iframe>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-6 text-center">
@@ -458,7 +494,7 @@ ${plan.weather_forecast.map((w, i) => `第 ${i+1} 天：${w.temp} (${w.condition
                     </div>
                   )}
                   {/* Fallback if no API key is provided - show a static map link or message */}
-                  {(!process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY === 'YOUR_API_KEY_HERE') && selectedLocation && (
+                  {(!import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.VITE_GOOGLE_MAPS_API_KEY === 'YOUR_API_KEY_HERE') && selectedLocation && (
                     <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 text-center">
                       <p className="text-xs mb-4">請在環境變數中設定 GOOGLE_MAPS_API_KEY 以啟用嵌入式地圖。</p>
                       <a 
@@ -508,7 +544,7 @@ ${plan.weather_forecast.map((w, i) => `第 ${i+1} 天：${w.temp} (${w.condition
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="absolute bottom-20 right-0 w-96 h-[500px] glass rounded-3xl flex flex-col overflow-hidden shadow-2xl border-orange-100"
+              className="absolute bottom-20 right-0 w-[calc(100vw-2rem)] sm:w-96 h-[500px] glass rounded-3xl flex flex-col overflow-hidden shadow-2xl border-orange-100"
             >
               <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
                 <div className="flex items-center gap-3">
